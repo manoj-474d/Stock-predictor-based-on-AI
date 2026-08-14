@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AI Stock Analytics & Simulation</title>
+    <!-- Chart.js and Style stylesheet -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Ambient background glows -->
+    <div class="bg-glow-container">
+        <div class="bg-glow-blob blob-1"></div>
+        <div class="bg-glow-blob blob-2"></div>
+    </div>
+
+    <!-- 1. Authentication Page Panel -->
+    <div class="auth-page" id="authPage">
+        <!-- Login Sub-card -->
+        <div class="auth-card" id="loginForm">
+            <div class="brand-header">
+                <h1 class="brand-logo">📈 AI Stock<span> Analytics & Simulation</span></h1>
+                <p class="brand-subtitle">AI-Powered Predictions & Sandbox Trading Simulator</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="loginUser">Username</label>
+                <input class="input-field" type="text" id="loginUser" placeholder="Enter username (e.g. admin)"
+                    value="demouser">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="loginPass">Password</label>
+                <input class="input-field" type="password" id="loginPass" placeholder="••••••••" value="password123">
+            </div>
+
+            <div class="error-message" id="loginError"></div>
+
+            <button class="btn-premium" id="btnDoLogin">Access Dashboard</button>
+
+            <div class="auth-footer">
+                New user? <a href="#" class="auth-link" id="toRegister">Create account</a>
+            </div>
+        </div>
+
+        <!-- Registration Sub-card -->
+        <div class="auth-card" id="registerForm" style="display: none;">
+            <div class="brand-header">
+                <h1 class="brand-logo">📈 AI Stock<span> Analytics & Simulation</span></h1>
+                <p class="brand-subtitle">Register a simulated trading account</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="regUser">Choose Username</label>
+                <input class="input-field" type="text" id="regUser" placeholder="e.g. trader_pro">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="regPass">Choose Password</label>
+                <input class="input-field" type="password" id="regPass" placeholder="Min. 5 characters">
+            </div>
+
+            <div class="error-message" id="regError"></div>
+
+            <button class="btn-premium" id="btnDoRegister">Create Account</button>
+
+            <div class="auth-footer">
+                Already registered? <a href="#" class="auth-link" id="toLogin">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Main Dashboard Panel -->
+    <div class="dashboard-wrapper" id="dashboardPage">
+
+        <!-- Sticky Navigation Bar -->
+        <nav class="dashboard-nav">
+            <h1 class="brand-logo" style="font-size: 1.3rem;">📈 AI Stock<span> Analytics & Simulation</span></h1>
+
+            <div class="nav-user">
+                <button class="btn-icon admin-nav-btn" id="btnGoAdmin" style="display: none;" onclick="showAdminPage()">
+                    ⚙️ Admin Panel
+                </button>
+                <div class="user-avatar" id="userInitial">U</div>
+                <span id="userDisplayName" style="font-weight: 500; font-size: 0.95rem;">User</span>
+                <button class="btn-icon" id="btnLogout">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="dashboard-container">
+
+            <!-- Statistics Overview Section -->
+            <section class="overview-stats">
+
+                <div class="stat-card">
+                    <div class="stat-title">Current Price</div>
+                    <div class="stat-val" id="cardPriceToday">₹0.00</div>
+                    <div class="stat-subtext">
+                        <span id="cardChangePercent" class="trend-indicator">0.00%</span> today
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">30-Day ML Forecast</div>
+                    <div class="stat-val" id="cardPriceForecast">₹0.00</div>
+                    <div class="stat-subtext"
+                        style="color: var(--text-secondary); display: flex; justify-content: space-between;">
+                        <span>Change: <span id="cardChangePrice">₹0.00</span></span>
+                        <span id="cardRecommendation"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Control & Visual Panel Layout -->
+            <div class="dashboard-workspace">
+
+                <!-- Left Sidebar: Controls & Simulator -->
+                <aside class="control-panel">
+                    <div>
+                        <h2 class="panel-title">
+                            <span>⚙️</span> Engine Settings
+                        </h2>
+
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label class="form-label">Select Company Stock</label>
+                            <select class="form-select" id="stockSelect" onchange="runAnalysis()">
+                                <option value="AAPL">[USD] Apple Inc. (AAPL)</option>
+                                <option value="MSFT">[USD] Microsoft Corp. (MSFT)</option>
+                                <option value="GOOGL">[USD] Alphabet Inc. (GOOGL)</option>
+                                <option value="AMZN">[USD] Amazon.com (AMZN)</option>
+                                <option value="TSLA">[USD] Tesla Motors (TSLA)</option>
+                                <option value="META">[USD] Meta Platforms (META)</option>
+                                <option value="NVDA">[USD] NVIDIA Corp. (NVDA)</option>
+                                <option value="RELIANCE">[INR] Reliance Industries (RELIANCE)</option>
+                                <option value="TCS">[INR] TCS Ltd. (TCS)</option>
+                                <option value="INFY">[INR] Infosys Ltd. (INFY)</option>
+                                <option value="HDFCBANK">[INR] HDFC Bank (HDFCBANK)</option>
+                                <option value="SBIN">[INR] State Bank of India (SBIN)</option>
+                                <option value="TATASTEEL">[INR] Tata Steel (TATASTEEL)</option>
+                                <option value="BHARTIARTL">[INR] Bharti Airtel (BHARTIARTL)</option>
+                                <option value="NOK">[USD] Nokia Corp. (NOK)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Historical Data Range</label>
+                            <select class="form-select" id="dateSelect" onchange="runAnalysis()">
+                                <option value="90">Last 90 Days</option>
+                                <option value="180" selected>Last 180 Days</option>
+                                <option value="365">Last 365 Days</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-premium" onclick="runAnalysis()" style="margin-top: 0.5rem;">
+                            🔄 Run AI Analysis
+                        </button>
+                    </div>
+
+
+                </aside>
+
+                <!-- Right Visual Section: ML Chart -->
+                <section class="analysis-card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                        <h2 class="panel-title" style="border: none; margin: 0; padding: 0;">
+                            <span>📈</span> 30-Day Forecast Visualization
+                        </h2>
+
+                        <!-- Pulse loader container -->
+                        <div class="loading-pulse" id="pulseLoader">
+                            <div class="pulse-circle"></div>
+                            <div class="pulse-circle"></div>
+                            <div class="pulse-circle"></div>
+                            <span style="font-size:0.8rem; color: var(--text-secondary);">Fitting Linear Regression
+                                Model...</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-wrapper" id="forecastResults">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Global Stock watchlist table -->
+            <section class="table-panel">
+                <div class="table-header">
+                    <h2 class="table-title">Market Overview Watchlist</h2>
+                    <button class="btn-icon" onclick="exportCSVReport()">
+                        📥 Export CSV Report
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Current Price</th>
+                                <th>Previous Close</th>
+                                <th>Net Change</th>
+                                <th>% Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marketOverviewTableBody">
+                            <!-- Populated dynamically via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Footer disclaimer -->
+            <footer class="footer-text">
+                ⚠️ Simulation Disclosure: Predictions are generated completely in-browser utilizing client-side Linear
+                Regression models based on historical datasets. All values and quotes are simulated for illustrative and
+                educational sandbox trading purposes. Do not make real-world investments based on this software.
+                <br>
+                Designed and built for high-performance static internet deployment.
+            </footer>
+        </main>
+    </div>
+
+    <!-- Custom Stock simulation creator modal -->
+    <div class="modal-overlay" id="customStockModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Custom Stock</h3>
+                <button class="btn-close" onclick="closeCustomStockModal()">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="customSym">Stock Ticker Symbol</label>
+                <input class="input-field" type="text" id="customSym" placeholder="e.g. INFY2, GOOGL2">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="customName">Company Name</label>
+                <input class="input-field" type="text" id="customName" placeholder="e.g. Infosys Premium">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="customPrice">Initial Price (INR)</label>
+                <input class="input-field" type="number" id="customPrice" placeholder="e.g. 500" value="100">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="customTrend">Drift Strength (-50 to +50)</label>
+                <input class="input-field" type="number" id="customTrend" placeholder="High value means growth"
+                    value="5" min="-50" max="50">
+                <span style="font-size:0.75rem; color: var(--text-muted); margin-top:0.25rem; display:block;">Determines
+                    whether the stock grows or falls on average over time.</span>
+            </div>
+
+            <button class="btn-premium" onclick="createCustomStock()">Launch Simulation</button>
+        </div>
+    </div>
+
+    <!-- 3. Admin Dashboard Panel -->
+    <div class="admin-page-wrapper" id="adminPage">
+        <!-- Admin Nav Bar -->
+        <nav class="dashboard-nav">
+            <h1 class="brand-logo" style="font-size: 1.3rem;">📈 AI Stock<span> Analytics & Simulation</span></h1>
+
+            <div class="nav-user">
+                <button class="btn-icon" onclick="exitAdminPage()">
+                    ⬅️ Back to Dashboard
+                </button>
+                <div class="user-avatar" style="background: var(--accent-gradient);">A</div>
+                <span style="font-weight: 500; font-size: 0.95rem;">Administrator</span>
+                <button class="btn-icon" id="btnAdminLogout">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </nav>
+
+        <!-- Admin Container -->
+        <main class="dashboard-container">
+            <section class="overview-stats">
+                <div class="stat-card">
+                    <div class="stat-title">Registered Accounts</div>
+                    <div class="stat-val" id="adminTotalUsers">0</div>
+                    <div class="stat-subtext" style="color: var(--text-secondary);">
+                        👥 Users signed up
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Visits Logged</div>
+                    <div class="stat-val" id="adminTotalLogins">0</div>
+                    <div class="stat-subtext" style="color: var(--text-secondary);">
+                        🌐 All page visits recorded
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Unique IP Addresses</div>
+                    <div class="stat-val" id="adminTotalCapital">0</div>
+                    <div class="stat-subtext" style="color: var(--text-secondary);">
+                        🔎 Distinct visitors by IP
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Action & Logs Workspace -->
+            <div class="admin-grid">
+                <!-- Visitor Log tracker -->
+                <div class="table-panel" style="grid-column: 1 / -1;">
+                    <div class="table-header">
+                        <h2 class="table-title">🌐 Real Visitor Log</h2>
+                        <button class="btn-danger-action" id="btnClearLogsBtn"
+                            style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                            🗑️ Clear Visitor Logs
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="market-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>IP Address</th>
+                                    <th>Visit Time</th>
+                                    <th>Browser / OS</th>
+                                    <th>Page</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLogsTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
