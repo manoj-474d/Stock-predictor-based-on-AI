@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Prediction Based on AI Dashboard</title>
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Clean inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafaf6;
+            --surface: #e6ecf0;
+            --border: #141518;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --accent: #eb2528;
+            --accent-hover: #1D4ED8;
+            --success: #10B981;
+            --success-bg: #D1FAE5;
+            --danger: #f63030;
+            --danger-bg: #FEE2E2;
+            --warning: #F59E0B;
+            --warning-bg: #FEF3C7;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .navbar {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .search-section {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-input-wrapper {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            font-size: 1rem;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: var(--bg);
+            color: var(--text-primary);
+            transition: all 0.2s;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .search-input-wrapper input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background-color: var(--surface);
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg);
+        }
+
+        /* Results Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .metric-trend {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--danger);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-buy {
+            background-color: var(--success-bg);
+            color: #065F46;
+        }
+
+        .badge-sell {
+            background-color: var(--danger-bg);
+            color: #991B1B;
+        }
+
+        .badge-hold {
+            background-color: var(--warning-bg);
+            color: #92400E;
+        }
+
+        /* Chart */
+        .chart-section {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            height: 400px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        /* Table */
+        .table-section {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 1rem 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1.25rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ticker-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div>
+            <h1>Stock Predictor Based on AI</h1>
+            <p
+                style="margin: 0; font-size: 0.85rem; font-weight: 500; background: linear-gradient(to right, #2563EB, #8B5CF6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-top: 0.25rem;">
+                Powered by Machine Learning Models ✨</p>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Searchable list of famous companies -->
+        <datalist id="popularTickers">
+            <option value="AAPL">Apple Inc.</option>
+            <option value="MSFT">Microsoft Corp.</option>
+            <option value="GOOGL">Alphabet Inc.</option>
+            <option value="AMZN">Amazon.com Inc.</option>
+            <option value="TSLA">Tesla Inc.</option>
+            <option value="META">Meta Platforms Inc.</option>
+            <option value="NVDA">NVIDIA Corp.</option>
+            <option value="RELIANCE.NS">Reliance Industries (India)</option>
+            <option value="TCS.NS">Tata Consultancy Services (India)</option>
+            <option value="INFY.NS">Infosys (India)</option>
+            <option value="HDFCBANK.NS">HDFC Bank (India)</option>
+            <option value="SBIN.NS">State Bank of India</option>
+            <option value="ITC.NS">ITC Limited (India)</option>
+        </datalist>
+
+        <div style="text-align: center; margin-bottom: 2.5rem; margin-top: 1.5rem; font-family: 'Poppins', sans-serif;">
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+                rel="stylesheet">
+            <h2
+                style="font-size: 2.2rem; font-weight: 700; margin-bottom: 0.75rem; background: linear-gradient(to right, #ec4899, #8b5cf6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                🎯 Discover Market Insights 🚀
+            </h2>
+            <p style="font-size: 1.15rem; color: #4b5563; max-width: 650px; margin: 0 auto; line-height: 1.6;">
+                Enter a stock ticker below 👇 to let our AI analyze historical trends 📈 and predict the next 30 days of
+                market movement. 💡
+            </p>
+        </div>
+
+        <div class="search-section" style="flex-wrap: wrap; align-items: flex-end;">
+            <div class="search-input-wrapper" style="flex: 2; min-width: 200px;">
+                <label for="stockInput"
+                    style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">Stock
+                    Ticker</label>
+                <input type="text" id="stockInput" list="popularTickers"
+                    placeholder="Search by ticker (e.g. AAPL, RELIANCE.NS)" value="AAPL"
+                    onkeypress="if(event.key === 'Enter') predictStock()">
+            </div>
+            <div class="search-input-wrapper" style="flex: 1; min-width: 160px;">
+                <label for="startDateInput"
+                    style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">Start
+                    Date</label>
+                <input type="date" id="startDateInput" value="2026-01-01"
+                    onkeypress="if(event.key === 'Enter') predictStock()">
+            </div>
+            <button class="btn btn-primary" onclick="predictStock()">Analyze Stock</button>
+        </div>
+
+        <div id="loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-text">Analyzing market data & computing 30-day forecast...</div>
+        </div>
+
+        <div id="resultContainer" style="display: none;">
+            <div class="metrics-grid" id="predictionText">
+                <!-- Populated via JS -->
+            </div>
+            <div class="chart-section">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Live Market Overview -->
+        <div class="table-section" id="marketOverviewSection">
+            <div class="section-header">
+                <h2 class="section-title">Market Overview</h2>
+                <button class="btn btn-secondary" onclick="window.location.href='/download-stocks'">Export CSV</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="marketTable">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Current Price</th>
+                            <th>Previous Close</th>
+                            <th>Day Change</th>
+                            <th>% Change</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marketTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding: 2rem; color: var(--text-secondary);">
+                                Loading live market feeds...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer">
+            ⚠️ Disclaimer: This prediction is generated using Artificial Intelligence and Machine Learning models. The
+            results are based on historical data and may not always be accurate. Please do not rely solely on this
+            system for financial or investment decisions.
+        </div>
+
+    </div>
+    </div>
+
+    <script>
+        // Set Chart.js defaults
+        Chart.defaults.color = '#6B7280';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        let stockChart = null;
+
+        async function predictStock() {
+            const ticker = document.getElementById('stockInput').value.trim().toUpperCase();
+            if (!ticker) return alert("Please enter a stock ticker");
+
+            const startDate = document.getElementById('startDateInput').value;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker: ticker, start_date: startDate })
+                });
+
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                document.getElementById('resultContainer').style.display = 'block';
+
+                const lastPrice = data.current_price;
+                const predPrice = data.predicted_price;
+                const diff = predPrice - lastPrice;
+                const percentChange = ((diff / lastPrice) * 100).toFixed(2);
+
+                let recommendation = 'HOLD';
+                let badgeClass = 'badge-hold';
+                if (percentChange > 2) {
+                    recommendation = 'BUY';
+                    badgeClass = 'badge-buy';
+                } else if (percentChange < -2) {
+                    recommendation = 'SELL';
+                    badgeClass = 'badge-sell';
+                }
+
+                const diffFormatted = Math.abs(diff).toFixed(2);
+                const percentFormatted = Math.abs(percentChange).toFixed(2);
+                const isPositive = diff >= 0;
+
+                document.getElementById('predictionText').innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-label">Current Price</div>
+                        <div class="metric-value">₹${lastPrice.toFixed(2)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">30-Day Forecast</div>
+                        <div class="metric-value">₹${predPrice.toFixed(2)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Expected Change</div>
+                        <div class="metric-value">
+                            ${isPositive ? '+' : '-'}₹${diffFormatted}
+                        </div>
+                        <div class="metric-trend ${isPositive ? 'trend-up' : 'trend-down'}">
+                            ${isPositive ? '↑' : '↓'} ${percentFormatted}%
+                        </div>
+                    </div>
+                    <div class="metric-card" style="align-items: center; text-align: center;">
+                        <div class="metric-label" style="margin-bottom: 1rem;">Recommendation</div>
+                        <div><span class="badge ${badgeClass}">${recommendation}</span></div>
+                    </div>
+                `;
+
+                renderChart(data.historical, data.predicted_price);
+
+            } catch (err) {
+                document.getElementById('loading').style.display = 'none';
+                alert("Failed to fetch prediction. Make sure your inputs are correct.");
+                console.error(err);
+            }
+        }
+
+        function renderChart(historical, predictedPrice) {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+
+            if (stockChart) {
+                stockChart.destroy();
+            }
+
+            const dates = historical.dates;
+            const prices = historical.prices;
+
+            const lastDate = new Date(dates[dates.length - 1]);
+            lastDate.setDate(lastDate.getDate() + 30);
+            const futureDateStr = lastDate.toISOString().split('T')[0];
+
+            const chartDates = [...dates, futureDateStr];
+
+            const actualPrices = [...prices, null];
+
+            const predictionPrices = Array(dates.length).fill(null);
+            predictionPrices[dates.length - 1] = prices[prices.length - 1];
+            predictionPrices.push(predictedPrice);
+
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.15)');
+            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+
+            stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartDates,
+                    datasets: [
+                        {
+                            label: 'Historical',
+                            data: actualPrices,
+                            borderColor: '#2563EB',
+                            backgroundColor: gradient,
+                            borderWidth: 2,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointHoverBackgroundColor: '#1D4ED8',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Forecast',
+                            data: predictionPrices,
+                            borderColor: '#8B5CF6',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#8B5CF6',
+                            pointRadius: [...Array(dates.length).fill(0), 4],
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleFont: { size: 13, family: "'Inter', sans-serif" },
+                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 13 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 8, font: { size: 12 } }
+                        },
+                        y: {
+                            border: { display: false },
+                            grid: { color: '#F3F4F6' },
+                            ticks: {
+                                callback: function (value) {
+                                    return '₹' + value;
+                                },
+                                font: { size: 12 },
+                                padding: 10
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadMarketOverview() {
+            try {
+                const response = await fetch('/market-overview');
+                const data = await response.json();
+
+                const tbody = document.getElementById('marketTableBody');
+                tbody.innerHTML = '';
+
+                if (data.error) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--danger);">Failed to load live market data</td></tr>`;
+                    return;
+                }
+
+                data.stocks.forEach(stock => {
+                    if (stock.error) return;
+
+                    const diff = stock.current_price - stock.previous_close;
+                    const pct = ((diff / stock.previous_close) * 100).toFixed(2);
+                    const isUp = diff >= 0;
+                    const colorClass = isUp ? 'trend-up' : 'trend-down';
+                    const sign = isUp ? '+' : '';
+
+                    const p1 = stock.current_price.toFixed(2);
+                    const p2 = stock.previous_close.toFixed(2);
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="ticker-name">${stock.ticker}</td>
+                            <td>₹${p1}</td>
+                            <td>₹${p2}</td>
+                            <td class="${colorClass}">${sign}₹${diff.toFixed(2)}</td>
+                            <td class="${colorClass}">${sign}${pct}%</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Market Overview Error:", e);
+                document.getElementById('marketTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--danger);">Failed to fetch live market data.</td></tr>`;
+            }
+        }
+
+        // Initial load
+        window.addEventListener('load', () => {
+            predictStock();
+            loadMarketOverview();
+        });
+    </script>
+</body>
+
+</html>
